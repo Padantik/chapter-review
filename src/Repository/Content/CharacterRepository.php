@@ -19,6 +19,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CharacterRepository extends ServiceEntityRepository
 {
+    public const ALIAS = 'c';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Character::class);
@@ -29,22 +31,34 @@ class CharacterRepository extends ServiceEntityRepository
         return $this->findOneBy(['slug' => $slug]);
     }
 
-    public function applyFirstNameFilterToQueryBuilder(QueryBuilder $queryBuilder, string $rootAlias, ?string $firstName): QueryBuilder
+    public function applyFirstNameFilterToQueryBuilder(QueryBuilder $queryBuilder, ?string $firstName = null): QueryBuilder
+    {
+        if (null === $firstName || '' === $firstName) {
+            return $queryBuilder;
+        }
+
+        return $queryBuilder
+            ->andWhere(sprintf('%s.firstName LIKE :firstName', self::ALIAS))
+            ->setParameter('firstName', sprintf('%%%s%%', $firstName));
+    }
+
+    public function applyLastNameFilterToQueryBuilder(QueryBuilder $queryBuilder, ?string $lastName = null): QueryBuilder
+    {
+        if (null === $lastName || '' === $lastName) {
+            return $queryBuilder;
+        }
+
+        return $queryBuilder
+            ->andWhere(sprintf('%s.lastName LIKE :lastName', self::ALIAS))
+            ->setParameter('lastName', sprintf('%%%s%%', $lastName));
+    }
+
+    public function applyRaceFilterToQueryBuilder(QueryBuilder $queryBuilder, ?string $race = null): QueryBuilder
     {
         return $queryBuilder;
     }
 
-    public function applyLastNameFilterToQueryBuilder(QueryBuilder $queryBuilder, string $rootAlias, ?string $lastName): QueryBuilder
-    {
-        return $queryBuilder;
-    }
-
-    public function applyRaceFilterToQueryBuilder(QueryBuilder $queryBuilder, string $rootAlias, ?string $race): QueryBuilder
-    {
-        return $queryBuilder;
-    }
-
-    public function applyStatusFilterToQueryBuilder(QueryBuilder $queryBuilder, string $rootAlias, ?string $status): QueryBuilder
+    public function applyStatusFilterToQueryBuilder(QueryBuilder $queryBuilder, ?string $status = null): QueryBuilder
     {
         return $queryBuilder;
     }

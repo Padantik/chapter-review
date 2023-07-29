@@ -4,33 +4,42 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\CharacterDto;
 use App\Entity\Content\Character\Character;
-use App\Form\CharacterType;
+use App\Form\Content\Character\CharacterIndexType;
 use App\Repository\Content\CharacterRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Resource\IndexQueryResource;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/content', 'content_character_')]
-class CharacterController extends AbstractController
+class CharacterController extends AbstractFOSRestController
 {
     public function __construct(
-        protected CharacterDto $characterDto,
         protected CharacterRepository $characterRepository,
+        protected IndexQueryResource $indexQueryResource,
     ) {}
 
     #[Route('/characters', 'index', methods: Request::METHOD_GET)]
     public function index(Request $request): Response
     {
-        $characters = $this->characterRepository->findAll();
+        $form = $this
+            ->createForm(CharacterIndexType::class)
+            ->submit($request->query->all());
 
-        return $this->render(
-            'index.html.twig',
-            ['results' => array_map(fn (Character $character) => $this->characterDto->buildFromEntity($character), $characters)],
-        );
+        if ($form->isValid()) {
+            $queryBuilder = $this->characterRepository->createQueryBuilder(CharacterRepository::ALIAS);
+
+            $queryBuilder = $this->characterRepository->applyFirstNameFilterToQueryBuilder($queryBuilder, $form->get('firstName')->getData());
+
+            $view = $this->indexQueryResource->createViewFromQueryBuilder($queryBuilder, $form);
+        } else {
+            $view = $this->view($form);
+        }
+
+        return $this->handleView($view);
     }
 
     #[Route('/character/{slug}', 'show', methods: Request::METHOD_GET)]
@@ -40,13 +49,10 @@ class CharacterController extends AbstractController
             throw new NotFoundHttpException(sprintf('Character "%s" not found.', $slug));  
         }
 
-        return $this->render(
-            'show.html.twig',
-            ['result' => $this->characterDto->buildFromEntity($character)],
-        );
+        return $this->handleView($this->view($character));
     }
 
-    #[Route('/character', 'create', methods: [Request::METHOD_GET, Request::METHOD_POST])]
+    #[Route('/character', 'create', methods: Request::METHOD_POST)]
     public function create(Request $request): Response
     {
         $character = new Character();
@@ -58,7 +64,7 @@ class CharacterController extends AbstractController
         if ($form->isValid()) {
             
         } else {
-            return $this->render('form/base_form.html.twig');
+
         }
     }
 
@@ -68,11 +74,6 @@ class CharacterController extends AbstractController
         if (null === $character = $this->characterRepository->findBySlug($slug)) {
             throw new NotFoundHttpException(sprintf('Character "%s" not found.', $slug));  
         }
-
-        return $this->render(
-            'show.html.twig',
-            ['result' => $this->characterDto->buildFromEntity($character)],
-        );
     }
 
     #[Route('/character/{slug}', 'delete', methods: Request::METHOD_DELETE)]
@@ -81,10 +82,5 @@ class CharacterController extends AbstractController
         if (null === $character = $this->characterRepository->findBySlug($slug)) {
             throw new NotFoundHttpException(sprintf('Character "%s" not found.', $slug));  
         }
-
-        return $this->render(
-            'show.html.twig',
-            ['result' => $this->characterDto->buildFromEntity($character)],
-        );
     }
 }

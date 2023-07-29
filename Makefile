@@ -21,3 +21,10 @@ test:
 
 analyse:
 	php bin/phpunit
+
+make commit:
+	git add .
+	@echo "Commit message?: "; \
+    read AGE; \
+	git commit -m "$$AGE"
+	git push origin main
