@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Repository\Content;
 
 use App\Entity\Content\Character\Character;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

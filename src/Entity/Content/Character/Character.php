@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Entity\Content\Character;
 
-use App\Repository\CharacterRepository;
+use App\Repository\Content\CharacterRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CharacterRepository::class)]
-#[ORM\Table(name: 'character')]
+#[ORM\Table(name: '`character`')]
 class Character
 {
     #[ORM\Id]
@@ -28,13 +28,13 @@ class Character
     #[ORM\Column(length: 255)]
     private ?int $age = null;
 
-    #[ORM\JoinColumn(nullable: false)]
-    #[ORM\ManyToOne(targetEntity: Status::class)]
-    private ?Status $status = null;
+    #[ORM\ManyToOne(targetEntity: CharacterStatus::class, inversedBy: 'character')]
+    #[ORM\JoinColumn(name: 'status_id', referencedColumnName: 'id')]
+    private ?CharacterStatus $status = null;
 
-    #[ORM\JoinColumn(nullable: false)]
-    #[ORM\ManyToOne(targetEntity: Race::class)]
-    private ?Race $race = null;
+    #[ORM\ManyToOne(targetEntity: CharacterRace::class, inversedBy: 'character')]
+    #[ORM\JoinColumn(name: 'race_id', referencedColumnName: 'id')]
+    private ?CharacterRace $race = null;
 
     public function getId(): ?int
     {
@@ -89,24 +89,24 @@ class Character
         return $this;
     }
 
-    public function getStatus(): ?Status
+    public function getStatus(): ?CharacterStatus
     {
         return $this->status;
     }
 
-    public function setStatus(Status $status): self
+    public function setStatus(CharacterStatus $status): self
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getRace(): ?Race
+    public function getRace(): ?CharacterRace
     {
         return $this->race;
     }
 
-    public function setRace(Race $race): self
+    public function setRace(CharacterRace $race): self
     {
         $this->race = $race;
 

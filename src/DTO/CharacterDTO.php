@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\DTO;
+namespace App\Dto;
 
 use App\Entity\Content\Character\Character;
 
-class CharacterDTO
+class CharacterDto
 {
     public function buildFromEntity(Character $character): array
     {

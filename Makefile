@@ -1,4 +1,4 @@
-strip-db:
+reinstall-db:
 	bin/console doctrine:database:drop -f
 	bin/console doctrine:database:drop -f --env=test
 
@@ -12,5 +12,12 @@ mig:
 	bin/console doctrine:migrations:migrate
 	bin/console doctrine:migrations:migrate --env=test
 
+fixtures:
+	bin/console doctrine:fixtures:load -n
+	bin/console doctrine:fixtures:load -n --env=test
+
 test:
+	php bin/phpunit
+
+analyse:
 	php bin/phpunit
